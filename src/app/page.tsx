@@ -1,19 +1,23 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import { useEffect } from "react";
 import Image from "next/image";
 
-// PDF görüntüleyici bileşenini dinamik olarak import ediyoruz
-// Bu, sadece client tarafında çalışacak şekilde yapılandırılmıştır
-const PDFViewer = dynamic(
-  () => import("../components/PDFViewer"),
-  { ssr: false }
-);
-
 export default function Home() {
-  // Doğrudan katalog PDF'ini gösteriyoruz
+  // PDF dosya yolu
   const pdfPath = "/pdfs/stkozmetik-katalog-cihaz.pdf";
-
+  
+  // Sayfa yüklendiğinde doğrudan PDF'e yönlendir
+  useEffect(() => {
+    // Sadece client tarafında çalış
+    if (typeof window !== "undefined") {
+      // Mobil cihazlarda doğrudan PDF'e yönlendir
+      if (window.innerWidth < 768) {
+        window.location.href = pdfPath;
+      }
+    }
+  }, [pdfPath]);
+  
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <header className="bg-white shadow-sm py-3 px-4">
@@ -29,7 +33,7 @@ export default function Home() {
             />
           </div>
           <a 
-            href="/pdfs/stkozmetik-katalog-cihaz.pdf" 
+            href={pdfPath} 
             download
             className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors flex items-center"
           >
@@ -41,11 +45,22 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-1 w-full">
+      <main className="flex-1 w-full hidden md:block">
         <div className="h-[calc(100vh-80px)]">
-          <PDFViewer pdfPath={pdfPath} />
+          <iframe 
+            src={pdfPath} 
+            className="w-full h-full border-0" 
+            title="PDF Katalog"
+          />
         </div>
       </main>
+      
+      <div className="flex-1 w-full flex items-center justify-center p-4 md:hidden">
+        <p className="text-center text-gray-600">
+          PDF yükleniyor... Eğer otomatik olarak açılmazsa, 
+          <a href={pdfPath} className="text-blue-600 underline">buraya tıklayın</a>
+        </p>
+      </div>
 
       <footer className="bg-white py-2 border-t text-center text-gray-500 text-sm">
         <p>ST Kozmetik Katalog &copy; {new Date().getFullYear()}</p>
